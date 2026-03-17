@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Связь с продавцом — Lafufu store ✿{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <span class="card-label mb-2">💌 Контакты продавца 💌</span>
+                <h1 class="h3 mb-3">Связь с продавцом</h1>
+                <p class="decorative-note">Здесь нет корзины: выбери товар и напиши продавцу напрямую удобным способом.</p>
+                <hr>
+                <p><strong>Товар:</strong> {{ product.title }}</p>
+                <p><strong>Цена:</strong> {{ '%.2f'|format(product.price) }} ₽</p>
+                <p><strong>Продавец:</strong> {{ product.owner.display_name }}</p>
+                <p><strong>Контакт:</strong> {{ product.owner.contact_info }}</p>
+                <p class="mb-0 description-text"><strong>Описание:</strong> {{ product.description }}</p>
+                <div class="mt-4 d-flex gap-2 flex-wrap">
+                    <a href="/products/{{ product.id }}" class="btn btn-outline-dark">Открыть товар</a>
+                    <a href="/" class="btn btn-outline-secondary">К каталогу</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+services:
+  web:
+    build: .
+    command: ["/bin/sh", "/code/start.sh"]
+    env_file:
+      - .env
+    environment:
+      FLAG: "practice{f4ir_comp3tition_is_no7_4chiv4bl3}"
+    volumes:
+      - ./:/code
+    depends_on:
+      db:
+        condition: service_healthy
+    working_dir: /code
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - web
+    ports:
+      - "8000:80"
+      - "8443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: marketplace_db
+      POSTGRES_USER: marketplace_user
+      POSTGRES_PASSWORD: marketplace_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U marketplace_user -d marketplace_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups/initial_seed.sql:/docker-entrypoint-initdb.d/001_initial_seed.sql:ro
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

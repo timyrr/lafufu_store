@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Мой кабинет — Lafufu store ✿{% endblock %}
+
+{% block content %}
+<div class="row g-4 align-items-start">
+    <div class="col-lg-4">
+        <div class="card mb-4 sticky-form profile-summary-card">
+            <div class="card-body">
+                <span class="card-label mb-2">🎀 Профиль 🎀</span>
+                <h1 class="h4 mb-3">Мой кабинет</h1>
+                <p class="mb-2"><strong>Имя:</strong> {{ profile_user.display_name }}</p>
+                <p class="mb-2"><strong>Логин:</strong> @{{ profile_user.username }}</p>
+                <p class="mb-0"><strong>Контакт:</strong> {{ profile_user.contact_info }}</p>
+            </div>
+        </div>
+
+        <div class="card sticky-form">
+            <div class="card-body">
+                <span class="card-label mb-2">🌸 Новый товар 🌸</span>
+                <h2 class="h4 mb-3">Добавить товар</h2>
+                <p class="text-muted small">Новый товар появится в каталоге от вашего имени.</p>
+                <form action="/products" method="post" enctype="multipart/form-data" class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Название</label>
+                        <input type="text" name="title" class="form-control" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Описание</label>
+                        <textarea name="description" class="form-control" rows="4" required></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Цена</label>
+                        <input type="number" name="price" step="0.01" min="0" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Фото</label>
+                        <input type="file" name="image" accept="image/*" class="form-control">
+                    </div>
+                    <div class="col-12 d-grid">
+                        <button type="submit" class="btn btn-primary">Добавить товар</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="page-hero mb-3 d-flex justify-content-between align-items-center gap-3 flex-wrap">
+            <div>
+                <h2 class="h4 mb-1 hero-title">Мои товары</h2>
+                <p class="hero-subtitle mb-0">Здесь собраны только товары, которые добавили вы.</p>
+            </div>
+            <a href="/" class="btn btn-outline-secondary">Перейти к каталогу</a>
+        </div>
+
+        {% if user_products %}
+            <div class="row g-4">
+                {% for product in user_products %}
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            {% if product.image_filename %}
+                                <img src="{{ url_for('static', path='uploads/' + product.image_filename) }}" class="card-img-top product-image" alt="{{ product.title }}">
+                            {% else %}
+                                <div class="card-img-top product-image placeholder-image d-flex align-items-center justify-content-center">
+                                    <span>📸 Без фото</span>
+                                </div>
+                            {% endif %}
+                            <div class="card-body d-flex flex-column">
+                                <h3 class="h5 card-title mb-2">{{ product.title }}</h3>
+                                <p class="text-muted small mb-2 description-block">{{ product.description[:120] }}{% if product.description|length > 120 %}...{% endif %}</p>
+                                <p class="mb-3"><span class="price-bubble">{{ '%.2f'|format(product.price) }} ₽</span></p>
+                                <div class="mt-auto d-flex flex-wrap gap-2">
+                                    <a href="/products/{{ product.id }}" class="btn btn-outline-dark btn-sm">Открыть</a>
+                                    <a href="/products/{{ product.id }}/edit" class="btn btn-outline-primary btn-sm">Редактировать</a>
+                                    <form action="/products/{{ product.id }}/delete" method="post" onsubmit="return confirm('Удалить товар?');">
+                                        <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-secondary">
+                У вас пока нет товаров. Добавьте первый товар через форму слева.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

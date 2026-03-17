@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.title }} — Lafufu store ✿{% endblock %}
+
+{% block content %}
+<div class="row g-4 align-items-start">
+    <div class="col-lg-6">
+        <div class="card overflow-hidden">
+            {% if product.image_filename %}
+                <img src="{{ url_for('static', path='uploads/' + product.image_filename) }}" class="detail-image" alt="{{ product.title }}">
+            {% else %}
+                <div class="detail-image placeholder-image d-flex align-items-center justify-content-center">
+                    <span>📸 Нет фотографии</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <span class="card-label mb-2">Карточка товара</span>
+                <h1 class="h2 mb-3">{{ product.title }}</h1>
+                <p class="mb-3"><span class="price-bubble">{{ '%.2f'|format(product.price) }} ₽</span></p>
+                <p class="mb-0 description-text">{{ product.description }}</p>
+                <div class="decorative-note mb-4">
+                    Связь с продавцом идёт напрямую, без корзины и оформления заказа на сайте.
+                </div>
+                <p class="mb-2"><strong>Продавец:</strong> {{ product.owner.display_name }}</p>
+                <p class="mb-4"><strong>Контакт:</strong> {{ product.owner.contact_info }}</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="/contact/{{ product.id }}" class="btn btn-success">Написать продавцу</a>
+                    {% if current_user and current_user.id == product.owner_id %}
+                        <a href="/products/{{ product.id }}/edit" class="btn btn-outline-primary">Редактировать</a>
+                        <form action="/products/{{ product.id }}/delete" method="post" onsubmit="return confirm('Удалить товар?');">
+                            <button type="submit" class="btn btn-danger">Удалить</button>
+                        </form>
+                    {% endif %}
+                    <a href="/" class="btn btn-outline-secondary">К каталогу</a>
+                    {% if current_user and current_user.id == product.owner_id %}
+                        <a href="/profile" class="btn btn-outline-secondary">Мой кабинет</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

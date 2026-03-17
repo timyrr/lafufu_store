@@ -1,0 +1,15 @@
+{
+    default_sni localhost
+}
+
+http://localhost {
+    redir https://localhost:8443{uri} 308
+}
+
+localhost, 10.194.0.216 {
+    tls internal
+    encode zstd gzip
+    reverse_proxy web:8000
+}
+
+

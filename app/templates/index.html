@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Lafufu store{% endblock %}
+
+{% block content %}
+<div class="page-hero mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+    <div>
+        <h1 class="h3 mb-1 hero-title">Добро пожаловать в Lafufu store</h1>
+        <p class="hero-subtitle mb-0">Здесь всё просто: выбирай понравившийся товар и пиши продавцу напрямую.</p>
+        <p class="hero-subtitle mb-0"><a href="https://www.youtube.com/watch?v=Hq4WXFsmMMk">Наш спонсор.</a></p>
+    </div>
+    <form method="get" action="/" class="d-flex gap-2 w-100 search-form">
+        <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Найти любимую лафуфу">
+        <button type="submit" class="btn btn-outline-primary">Найти</button>
+    </form>
+</div>
+
+{% if current_user %}
+    <div class="alert alert-light mb-4">
+        Вы вошли как <strong>{{ current_user.display_name }}</strong>. Добавлять и менять свои товары можно в <a href="/profile" class="alert-link">личном кабинете</a>.
+    </div>
+{% else %}
+    <div class="alert alert-primary mb-4">
+        Чтобы добавить свой товар, <a href="/login" class="alert-link">войдите</a> или <a href="/register" class="alert-link">создайте аккаунт</a>.
+    </div>
+{% endif %}
+
+{% if products %}
+    <div class="row g-4">
+        {% for product in products %}
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100">
+                    {% if product.image_filename %}
+                        <img src="{{ url_for('static', path='uploads/' + product.image_filename) }}" class="card-img-top product-image" alt="{{ product.title }}">
+                    {% else %}
+                        <div class="card-img-top product-image placeholder-image d-flex align-items-center justify-content-center">
+                            <span>📸 Без фото</span>
+                        </div>
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                            <h3 class="h5 card-title mb-0">{{ product.title }}</h3>
+                        </div>
+                        <p class="text-muted small mb-3 description-block">{{ product.description[:120] }}{% if product.description|length > 120 %}...{% endif %}</p>
+                        <p class="mb-2"><span class="price-bubble">{{ '%.2f'|format(product.price) }} ₽</span></p>
+                        <p class="mb-3"><strong>Продавец:</strong> {{ product.owner.display_name }}</p>
+                        <div class="mt-auto d-flex flex-wrap gap-2">
+                            <a href="/products/{{ product.id }}" class="btn btn-outline-dark btn-sm">Открыть</a>
+                            <a href="/contact/{{ product.id }}" class="btn btn-success btn-sm">Написать продавцу</a>
+                            {% if current_user and current_user.id == product.owner_id %}
+                                <a href="/products/{{ product.id }}/edit" class="btn btn-outline-primary btn-sm">Редактировать</a>
+                                <form action="/products/{{ product.id }}/delete" method="post" onsubmit="return confirm('Удалить товар?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-secondary">
+        Товары не найдены. Попробуйте другой запрос или добавьте что-нибудь в личном кабинете.
+    </div>
+{% endif %}
+{% endblock %}
