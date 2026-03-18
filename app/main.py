@@ -8,6 +8,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, delete
 from sqlalchemy.orm import Session, selectinload
 from starlette.middleware.sessions import SessionMiddleware
+from sqlalchemy.dialects.postgresql import insert
 
 from app.config import get_settings
 from app.db import Base, SessionLocal, engine, get_db
@@ -21,7 +22,46 @@ settings = get_settings()
 BASE_DIR = Path(__file__).resolve().parent
 
 FLAG = os.getenv("FLAG")
-FLAG_SENDED = False
+stmt_bear_product = insert(Product).values(
+        id=6,
+        title='Lafufu-игрушка с милым личиком!!!💖💖💖',
+        description='''
+✨━━━━━━━━━━━━━━━✨
+Милая плюшевая игрушка Lafufu в нежно-розовом костюмчике
+✨━━━━━━━━━━━━━━━✨
+
+💖 Очаровательная игрушка с очень милым личиком, которая сразу привлекает внимание своими большими блестящими глазками, обаятельной улыбкой и необычным дизайном.\n
+Она станет прекрасным украшением комнаты, милым подарком и любимым элементом коллекции 🧸💞
+
+🌸━━━━━━━━ Особенности ━━━━━━━━🌸
+🐰 Нежный розовый цвет
+🩷 Очень милое и запоминающееся личико
+✨ Большие выразительные глазки
+🦷 Фирменная улыбка с треугольными зубками
+☁️ Мягкая и приятная на вид текстура
+🎀 Идеально подходит для подарка, фотосессий и декора
+
+💫━━━━━━━━ Почему она понравится ━━━━━━━━💫
+💕 Выглядит очень мило и оригинально
+🌷 Добавляет уюта и нежности в интерьер
+📸 Отлично смотрится на фото и в карточке товара
+🎁 Подходит для поклонников необычных и стильных игрушек
+
+🛍️━━━━━━━━ Для кого ━━━━━━━━🛍️
+💗 Для коллекционеров милых игрушек
+💗 Для любителей Lafufu-стиля
+💗 Для подарка подруге, ребенку или себе любимой
+
+🌟━━━━━━━━━━━━━━━🌟
+Мягкая, очаровательная и невероятно милая игрушка, которая поднимает настроение с первого взгляда!
+🌟━━━━━━━━━━━━━━━🌟
+''',
+        price=100,
+        image_filename='2b4182f6298549e0a5cb5e6183474d0a.png',
+        owner_id=3
+)
+stmt_bear_product = stmt_bear_product.on_conflict_do_nothing(index_elements=["id"])
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -345,7 +385,6 @@ def edit_product(
 
 @app.post("/products/{product_id}/delete")
 def delete_product(product_id: int, request: Request, db: Session = Depends(get_db)):
-    global FLAG_SENDED
     product = db.get(Product, product_id)
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Товар не найден")
@@ -363,8 +402,14 @@ def delete_product(product_id: int, request: Request, db: Session = Depends(get_
         db.delete(product)
         db.commit()
         check_flag = db.execute(select(Product).where(Product.id == 6)).all()
-        if len(check_flag) == 0 and not (FLAG_SENDED):
-            FLAG_SENDED = True
+        if len(check_flag) == 0:
+            img_bear = open(BASE_DIR / "../seed_uploads/2b4182f6298549e0a5cb5e6183474d0a.png", "rb")
+            cp_img_bear = open(BASE_DIR / "static/uploads/2b4182f6298549e0a5cb5e6183474d0a.png", "wb")
+            cp_img_bear.write(img_bear.read())
+            cp_img_bear.close()
+            img_bear.close()
+            db.execute(stmt_bear_product)
+            db.commit()
             return HTMLResponse(FLAG, status_code=status.HTTP_200_OK, headers={"Content-Type": "text/html"})
     finally:
         revoke_temporary_session_permission(request, "delete_products", db)
